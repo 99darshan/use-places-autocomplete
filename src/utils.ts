@@ -31,20 +31,40 @@ export const getLatLng = (result: GeocodeResult): LatLng => {
   return { lat: lat(), lng: lng() };
 };
 
+export enum AddressComponent {
+  STREET_NUMBER = "street_number",
+  ROUTE = "route",
+  NEIGHBORHOOD = "neighborhood",
+  LOCALITY = "locality",
+  ADMINISTRATIVE_AREA_LEVEL_1 = "administrative_area_level_1",
+  ADMINISTRATIVE_AREA_LEVEL_2 = "administrative_area_level_2",
+  POSTAL_CODE = "postal_code",
+  COUNTRY = "country",
+}
+
+export const getAddressComponent = (
+  result: GeocodeResult,
+  addressComponent: AddressComponent,
+  useShortName: false
+): string | undefined => {
+  const foundAddressComponent = result.address_components.find(({ types }) =>
+    types.includes(addressComponent)
+  );
+
+  if (!foundAddressComponent) return undefined;
+
+  return useShortName
+    ? foundAddressComponent.short_name
+    : foundAddressComponent.long_name;
+};
+
 type ZipCode = string | undefined;
 
 export const getZipCode = (
   result: GeocodeResult,
   useShortName: false
-): ZipCode => {
-  const foundZip = result.address_components.find(({ types }) =>
-    types.includes("postal_code")
-  );
-
-  if (!foundZip) return undefined;
-
-  return useShortName ? foundZip.short_name : foundZip.long_name;
-};
+): ZipCode =>
+  getAddressComponent(result, AddressComponent.POSTAL_CODE, useShortName);
 
 type GetDetailsArgs = google.maps.places.PlaceDetailsRequest;
 
